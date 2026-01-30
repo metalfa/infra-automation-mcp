@@ -1,3 +1,13 @@
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+*.tfvars
+!*.tfvars.example
+tfplan
+plan_output.txt
+
 # Secrets
 .env
 *.pem
@@ -8,14 +18,6 @@ __pycache__/
 *.py[cod]
 venv/
 *.egg-info/
-dist/
-build/
-
-# Terraform
-*.tfstate
-*.tfstate.*
-.terraform/
-*.tfvars
 
 # IDE
 .vscode/

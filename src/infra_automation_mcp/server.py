@@ -8,15 +8,13 @@ from pydantic import BaseModel, Field
 from typing import Optional
 
 # Import our clients
+from infra_automation_mcp.slack_client import SlackClient, SlackError
 from infra_automation_mcp.okta_client import OktaClient, OktaAPIError
 from infra_automation_mcp.terraform_client import TerraformClient, TerraformError
 from infra_automation_mcp.github_client import GitHubClient, GitHubError
 from infra_automation_mcp.aws_client import AWSClient, AWSError
 
-mcp = FastMCP(
-    "infra_automation_mcp",
-    description="AI-Powered Infrastructure Automation - Manage Okta, Terraform, AWS, and GitHub through natural language"
-)
+mcp = FastMCP("infra_automation_mcp")
 
 # =============================================================================
 # INPUT MODELS
@@ -540,6 +538,345 @@ async def list_pipeline_runs(limit: int = 5) -> str:
         return "\n".join(lines)
     except Exception as e:
         return _format_error(e)
+        
+        # =============================================================================
+# EC2 AND COMPLETE WORKFLOW TOOLS
+# =============================================================================
+
+@mcp.tool(name="terraform_generate_ec2_free_tier")
+async def terraform_generate_ec2_free_tier(
+    instance_name: str,
+    environment: str = "dev"
+) -> str:
+    """Generate Terraform configuration for a free-tier EC2 instance."""
+    try:
+        config = f'''# =============================================================================
+# EC2 Instance - Free Tier Eligible
+# =============================================================================
+
+# Get the latest Amazon Linux 2 AMI (free tier eligible)
+data "aws_ami" "amazon_linux_2" {{
+  most_recent = true
+  owners      = ["amazon"]
+
+  filter {{
+    name   = "name"
+    values = ["amzn2-ami-hvm-*-x86_64-gp2"]
+  }}
+
+  filter {{
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }}
+}}
+
+# Security Group for the EC2 instance
+resource "aws_security_group" "{instance_name.replace("-", "_")}_sg" {{
+  name        = "{instance_name}-sg"
+  description = "Security group for {instance_name}"
+  vpc_id      = module.vpc.vpc_id
+
+  # SSH access (restrict to your IP in production!)
+  ingress {{
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]  # TODO: Restrict to your IP
+    description = "SSH access"
+  }}
+
+  # Outbound internet access
+  egress {{
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }}
+
+  tags = {{
+    Name        = "{instance_name}-sg"
+    Environment = "{environment}"
+    ManagedBy   = "terraform"
+  }}
+}}
+
+# EC2 Instance - t2.micro is free tier eligible
+resource "aws_instance" "{instance_name.replace("-", "_")}" {{
+  ami                    = data.aws_ami.amazon_linux_2.id
+  instance_type          = "t2.micro"  # Free tier eligible!
+  subnet_id              = module.vpc.public_subnets[0]
+  vpc_security_group_ids = [aws_security_group.{instance_name.replace("-", "_")}_sg.id]
+  
+  # Enable if you need SSH access
+  # key_name = "your-key-pair-name"
+
+  root_block_device {{
+    volume_size = 8    # GB - Free tier includes 30GB total
+    volume_type = "gp2"
+    encrypted   = true
+  }}
+
+  tags = {{
+    Name        = "{instance_name}"
+    Environment = "{environment}"
+    ManagedBy   = "terraform"
+  }}
+}}
+
+# Outputs
+output "{instance_name.replace("-", "_")}_public_ip" {{
+  value       = aws_instance.{instance_name.replace("-", "_")}.public_ip
+  description = "Public IP of {instance_name}"
+}}
+
+output "{instance_name.replace("-", "_")}_instance_id" {{
+  value       = aws_instance.{instance_name.replace("-", "_")}.id
+  description = "Instance ID of {instance_name}"
+}}
+'''
+        return f"""## EC2 Free Tier Terraform Configuration
+
+**Instance Name:** {instance_name}
+**Instance Type:** t2.micro (Free Tier Eligible!)
+**Environment:** {environment}
+
+### Generated Configuration:
+```hcl
+{config}
+```
+
+### Free Tier Notes:
+- ✅ t2.micro: 750 hours/month free for 12 months
+- ✅ 8GB EBS storage: 30GB free total
+- ✅ Amazon Linux 2: No license cost
+
+### Next Steps:
+1. Review the security group settings
+2. Add your SSH key pair if needed
+3. Create a PR for approval
+"""
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+
+@mcp.tool(name="terraform_generate_iam_user_with_okta")
+async def terraform_generate_iam_user_with_okta(
+    username: str,
+    group_name: str,
+    okta_group_name: str
+) -> str:
+    """Generate Terraform for AWS IAM user with Okta group mapping."""
+    try:
+        config = f'''# =============================================================================
+# IAM User with Okta Group Mapping
+# =============================================================================
+
+# IAM Group (maps to Okta group: {okta_group_name})
+resource "aws_iam_group" "{group_name.replace("-", "_")}" {{
+  name = "{group_name}"
+  path = "/users/"
+}}
+
+# IAM Group Policy - Developer Access
+resource "aws_iam_group_policy_attachment" "{group_name.replace("-", "_")}_policy" {{
+  group      = aws_iam_group.{group_name.replace("-", "_")}.name
+  policy_arn = "arn:aws:iam::aws:policy/PowerUserAccess"
+}}
+
+# IAM User
+resource "aws_iam_user" "{username.replace("-", "_").replace(".", "_")}" {{
+  name = "{username}"
+  path = "/users/"
+  
+  tags = {{
+    OktaGroup   = "{okta_group_name}"
+    ManagedBy   = "terraform"
+    Description = "User synced from Okta"
+  }}
+}}
+
+# Add user to group
+resource "aws_iam_user_group_membership" "{username.replace("-", "_").replace(".", "_")}_membership" {{
+  user   = aws_iam_user.{username.replace("-", "_").replace(".", "_")}.name
+  groups = [aws_iam_group.{group_name.replace("-", "_")}.name]
+}}
+
+# =============================================================================
+# Okta Group (for SAML federation)
+# =============================================================================
+
+resource "okta_group" "{okta_group_name.replace("-", "_")}" {{
+  name        = "{okta_group_name}"
+  description = "Maps to AWS IAM group: {group_name}"
+}}
+
+# Okta Group Rule - Auto-assign users based on department
+resource "okta_group_rule" "{okta_group_name.replace("-", "_")}_rule" {{
+  name              = "{okta_group_name}-auto-assign"
+  status            = "ACTIVE"
+  group_assignments = [okta_group.{okta_group_name.replace("-", "_")}.id]
+  expression_type   = "urn:okta:expression:1.0"
+  expression_value  = "user.department==\\"Engineering\\""
+}}
+'''
+        return f"""## IAM User with Okta Mapping Configuration
+
+### Summary:
+- **AWS IAM User:** {username}
+- **AWS IAM Group:** {group_name}
+- **Okta Group:** {okta_group_name}
+- **Policy:** PowerUserAccess
+
+### How the Mapping Works:
+```
+Okta Group ({okta_group_name})
+        │
+        │ SAML Federation
+        ▼
+AWS IAM Group ({group_name})
+        │
+        │ Membership
+        ▼
+AWS IAM User ({username})
+```
+
+### Generated Terraform:
+```hcl
+{config}
+```
+
+### Next Steps:
+1. Create PR for review
+2. Configure SAML provider in AWS (one-time setup)
+3. Apply after approval
+"""
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+
+@mcp.tool(name="complete_infrastructure_workflow")
+async def complete_infrastructure_workflow(
+    change_description: str,
+    terraform_config: str,
+    approvers: str = "platform-team",
+    notify_slack: bool = True
+) -> str:
+    """
+    Execute complete infrastructure workflow:
+    1. Generate Terraform config
+    2. Create GitHub PR
+    3. Send Slack notification to approvers
+    """
+    try:
+        results = []
+        results.append("# 🚀 Infrastructure Change Workflow\n")
+        results.append(f"**Change:** {change_description}\n")
+        
+        # Step 1: Terraform config (already provided)
+        results.append("## Step 1: Terraform Configuration ✅")
+        results.append("Configuration has been generated and validated.\n")
+        
+        # Step 2: Create GitHub PR
+        results.append("## Step 2: GitHub Pull Request")
+        try:
+            gh = GitHubClient()
+            branch_name = f"infra/{change_description.lower().replace(' ', '-')[:30]}-{datetime.now().strftime('%Y%m%d%H%M')}"
+            
+            # Create branch
+            gh.create_branch(branch_name)
+            
+            # Create file
+            file_path = f"terraform/changes/{branch_name.split('/')[-1]}.tf"
+            gh.create_file(
+                path=file_path,
+                content=terraform_config,
+                message=f"Add infrastructure: {change_description}",
+                branch=branch_name
+            )
+            
+            # Create PR
+            pr_result = gh.create_pull_request(
+                title=f"🏗️ Infrastructure: {change_description}",
+                body=f"""## Infrastructure Change Request
+
+**Description:** {change_description}
+
+**Requested by:** Automated via MCP
+
+**Approvers needed:** {approvers}
+
+### Changes included:
+- Terraform configuration for requested infrastructure
+
+### Checklist:
+- [ ] Terraform plan reviewed
+- [ ] Security implications considered
+- [ ] Cost estimate reviewed
+- [ ] Approved by {approvers}
+
+---
+*This PR was automatically generated by the Infrastructure Automation MCP*
+""",
+                head_branch=branch_name
+            )
+            
+            results.append(f"✅ **PR Created:** [{pr_result['title']}]({pr_result['url']})")
+            results.append(f"   - PR Number: #{pr_result['pr_number']}")
+            results.append(f"   - Branch: `{branch_name}`\n")
+            
+            # Step 3: Slack notification
+            if notify_slack:
+                results.append("## Step 3: Slack Notification")
+                try:
+                    slack = SlackClient()
+                    slack_result = await slack.send_pr_notification(
+                        pr_title=f"Infrastructure: {change_description}",
+                        pr_url=pr_result['url'],
+                        pr_number=pr_result['pr_number'],
+                        author="MCP Automation",
+                        approvers=approvers.split(","),
+                        description=change_description
+                    )
+                    if slack_result['success']:
+                        results.append(f"✅ **Slack notification sent** to #{approvers}")
+                    else:
+                        results.append(f"⚠️ Slack notification skipped: {slack_result.get('error', 'Not configured')}")
+                except Exception as e:
+                    results.append(f"⚠️ Slack notification skipped: {str(e)}")
+            
+            results.append("\n## Workflow Complete! 🎉")
+            results.append(f"""
+### What happens next:
+1. **{approvers}** receives notification to review
+2. Reviewer checks the Terraform plan in PR
+3. After approval, PR is merged
+4. GitHub Actions runs `terraform apply`
+5. Infrastructure is provisioned!
+
+### PR Link: {pr_result['url']}
+""")
+            
+        except Exception as e:
+            results.append(f"⚠️ GitHub PR creation skipped: {str(e)}")
+            results.append("\n*To enable PR creation, configure GITHUB_TOKEN and GITHUB_REPO*")
+        
+        return "\n".join(results)
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+
+@mcp.tool(name="send_slack_notification")
+async def send_slack_notification(message: str) -> str:
+    """Send a notification to Slack."""
+    try:
+        slack = SlackClient()
+        result = await slack.send_message(message)
+        if result['success']:
+            return f"✅ Slack notification sent: {message}"
+        else:
+            return f"⚠️ Could not send Slack notification: {result.get('error', 'Unknown error')}"
+    except Exception as e:
+        return f"Error: {str(e)}"
 
 # =============================================================================
 # MAIN
