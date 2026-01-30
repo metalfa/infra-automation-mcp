@@ -14,7 +14,7 @@ terraform {
 
   # Store state in S3 (we'll create this bucket manually first)
   backend "s3" {
-    bucket         = "infra-automation-tfstate-ActiveCampaign-demo"
+    bucket         = "infra-automation-tfstate-activecampaign-demo"
     key            = "dev/terraform.tfstate"
     region         = "us-east-1"
     encrypt        = true
