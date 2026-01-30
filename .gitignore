@@ -1,3 +1,12 @@
+# Terraform
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+tfplan
+*.tfvars
+!*.tfvars.example
+
 # Secrets
 .env
 *.pem
@@ -8,14 +17,6 @@ __pycache__/
 *.py[cod]
 venv/
 *.egg-info/
-dist/
-build/
-
-# Terraform
-*.tfstate
-*.tfstate.*
-.terraform/
-*.tfvars
 
 # IDE
 .vscode/
