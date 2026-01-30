@@ -1,0 +1,1 @@
+terraform/ec2/free-tier-instance.tf - EC2 t2.micro instance with Amazon Linux 2
