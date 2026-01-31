@@ -201,7 +201,7 @@ source venv/bin/activate
 pip install -e .
 
 
-# Configuration
+## Configuration
 
 1. **Copy the environment template:**
 bash
@@ -212,6 +212,7 @@ bash
 env
    ## Okta
    OKTA_BASE_URL=https://your-org.okta.com
+   
    OKTA_API_TOKEN=your-okta-token
 
    ## AWS
@@ -231,7 +232,7 @@ env
 
 
 3. **Configure Claude Desktop:**
-```
+
    Edit `%APPDATA%\Claude\claude_desktop_config.json` (Windows) or `~/Library/Application Support/Claude/claude_desktop_config.json` (Mac):
 json
    {
@@ -253,7 +254,7 @@ json
      }
    }
 
-```
+
 4. **Restart Claude Desktop**
 
 ---
