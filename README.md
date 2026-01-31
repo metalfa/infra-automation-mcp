@@ -98,7 +98,7 @@ Claude: Done! I've:
 | Slack Alerts | `send_slack_notification` | Notify teams of infrastructure changes |
 
 ---
-
+```
 ## 🏗️ Architecture
 mermaid
 flowchart TB
@@ -168,7 +168,7 @@ flowchart LR
     
     A --> B --> C --> D --> E --> F --> G --> H --> I --> J --> K --> L
 
-
+```
 ---
 
 ## 📦 Installation
@@ -182,26 +182,26 @@ flowchart LR
 - GitHub account
 - Claude Desktop
 
-### Quick Start
+# Quick Start
 
-# Clone the repository
+## Clone the repository
 git clone https://github.com/metalfa/infra-automation-mcp.git
 cd infra-automation-mcp
 
-# Create virtual environment
+## Create virtual environment
 python -m venv venv
 
 # Activate (Windows)
 .\venv\Scripts\Activate.ps1
 
-# Activate (Mac/Linux)
+## Activate (Mac/Linux)
 source venv/bin/activate
 
-# Install the package
+## Install the package
 pip install -e .
 
 
-### Configuration
+# Configuration
 
 1. **Copy the environment template:**
 bash
@@ -210,28 +210,28 @@ bash
 
 2. **Edit `.env` with your credentials:**
 env
-   # Okta
+   ## Okta
    OKTA_BASE_URL=https://your-org.okta.com
    OKTA_API_TOKEN=your-okta-token
 
-   # AWS
+   ## AWS
    AWS_REGION=us-east-1
    AWS_ACCESS_KEY_ID=your-access-key
    AWS_SECRET_ACCESS_KEY=your-secret-key
 
-   # GitHub
+   ## GitHub
    GITHUB_TOKEN=your-github-pat
    GITHUB_REPO=your-username/infra-automation-mcp
 
-   # Slack (optional)
+   ## Slack (optional)
    SLACK_WEBHOOK_URL=https://hooks.slack.com/services/xxx
 
-   # Terraform
+   ## Terraform
    TERRAFORM_WORKING_DIR=./terraform
 
 
 3. **Configure Claude Desktop:**
-
+```
    Edit `%APPDATA%\Claude\claude_desktop_config.json` (Windows) or `~/Library/Application Support/Claude/claude_desktop_config.json` (Mac):
 json
    {
@@ -253,7 +253,7 @@ json
      }
    }
 
-
+```
 4. **Restart Claude Desktop**
 
 ---
@@ -263,7 +263,7 @@ json
 ### Verify MCP is Running
 
 python -m infra_automation_mcp.server
-# Should output: Starting Infrastructure Automation MCP Server...
+## Should output: Starting Infrastructure Automation MCP Server...
 
 
 ### Test in Claude Desktop
@@ -327,7 +327,7 @@ I need to set up infrastructure for a new "Data Science" team:
 | **MFA Ready** | Okta policies support MFA enforcement |
 
 ---
-
+```
 ## 📁 Project Structure
 
 infra-automation-mcp/
@@ -352,7 +352,7 @@ infra-automation-mcp/
 ├── pyproject.toml
 └── README.md
 
-
+```
 ---
 
 
