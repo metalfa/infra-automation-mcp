@@ -9,7 +9,7 @@ This MCP (Model Context Protocol) server enables **natural language infrastructu
 ## The Innovation
 
 ### Traditional DevOps
-`ash
+
 # Create a user - requires knowing Okta CLI
 okta users create --firstName John --lastName Smith --email john@company.com
 
