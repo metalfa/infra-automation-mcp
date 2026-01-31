@@ -217,11 +217,14 @@ env
 
    ## AWS
    AWS_REGION=us-east-1
+   
    AWS_ACCESS_KEY_ID=your-access-key
+   
    AWS_SECRET_ACCESS_KEY=your-secret-key
 
    ## GitHub
    GITHUB_TOKEN=your-github-pat
+   
    GITHUB_REPO=your-username/infra-automation-mcp
 
    ## Slack (optional)
@@ -232,7 +235,7 @@ env
 
 
 3. **Configure Claude Desktop:**
-
+```
    Edit `%APPDATA%\Claude\claude_desktop_config.json` (Windows) or `~/Library/Application Support/Claude/claude_desktop_config.json` (Mac):
 json
    {
@@ -254,7 +257,7 @@ json
      }
    }
 
-
+```
 4. **Restart Claude Desktop**
 
 ---
