@@ -12,31 +12,31 @@ This MCP (Model Context Protocol) server enables AI assistants like Claude to ma
 
 ### Traditional Infrastructure Management
 
-# Create a user - requires knowing Okta CLI
+## Create a user - requires knowing Okta CLI
 okta users create --firstName Bruce --lastName Lee --email bruce@demoac.com
 
-# Find the group ID
+## Find the group ID
 okta groups list | grep "Engineering"
 
-# Add user to group
+## Add user to group
 okta groups members add 00g123456789 00u987654321
 
-# Write Terraform manually
+## Write Terraform manually
 vim terraform/users.tf
 
-# Create PR with multiple git commands
+## Create PR with multiple git commands
 git checkout -b add-user-Bruce
 git add .
 git commit -m "Add user Bruce Lee"
 git push origin add-user-Bruce
 gh pr create --title "Add user Bruce Lee"
 
-# Wait for approval, then apply
+## Wait for approval, then apply
 terraform apply
 
 **Time: 30-45 minutes | Error-prone | No audit trail**
 
-### With This MCP
+# With This MCP
 
 You: "Create a new user bruce.lee@demoac.com in the Engineering department,
       add them to the aws-developers group, generate Terraform code, and create a PR"
@@ -47,10 +47,10 @@ Claude: Done! I've:
         ✅ Generated production-ready Terraform
         ✅ Created PR #47 for review
         ✅ Sent Slack notification to approvers
-```
+
 **Time: 30 seconds | Error-free | Complete audit trail**
 
-```
+
 
 ## 🚀 Features
 
@@ -100,7 +100,7 @@ Claude: Done! I've:
 ---
 
 ## 🏗️ Architecture
-```mermaid
+mermaid
 flowchart TB
     subgraph User["👤 User Interface"]
         CD[Claude Desktop]
@@ -132,12 +132,12 @@ flowchart TB
     TF --> S3
     GH --> GITHUB
     SL --> SLACK
-```
+
 
 ---
 
 ## 🔄 CI/CD Pipeline Flow
-```mermaid
+mermaid
 flowchart LR
     subgraph Request["1️⃣ Request"]
         A[Developer asks Claude]
@@ -167,7 +167,7 @@ flowchart LR
     end
     
     A --> B --> C --> D --> E --> F --> G --> H --> I --> J --> K --> L
-```
+
 
 ---
 
@@ -183,7 +183,7 @@ flowchart LR
 - Claude Desktop
 
 ### Quick Start
-```
+
 # Clone the repository
 git clone https://github.com/metalfa/infra-automation-mcp.git
 cd infra-automation-mcp
@@ -199,17 +199,17 @@ source venv/bin/activate
 
 # Install the package
 pip install -e .
-```
+
 
 ### Configuration
 
 1. **Copy the environment template:**
-```bash
+bash
    cp .env.example .env
-```
+
 
 2. **Edit `.env` with your credentials:**
-```env
+env
    # Okta
    OKTA_BASE_URL=https://your-org.okta.com
    OKTA_API_TOKEN=your-okta-token
@@ -228,12 +228,12 @@ pip install -e .
 
    # Terraform
    TERRAFORM_WORKING_DIR=./terraform
-```
+
 
 3. **Configure Claude Desktop:**
 
    Edit `%APPDATA%\Claude\claude_desktop_config.json` (Windows) or `~/Library/Application Support/Claude/claude_desktop_config.json` (Mac):
-```json
+json
    {
      "mcpServers": {
        "infra-automation": {
@@ -252,7 +252,7 @@ pip install -e .
        }
      }
    }
-```
+
 
 4. **Restart Claude Desktop**
 
@@ -261,48 +261,48 @@ pip install -e .
 ## 🧪 Testing
 
 ### Verify MCP is Running
-```
+
 python -m infra_automation_mcp.server
 # Should output: Starting Infrastructure Automation MCP Server...
-```
+
 
 ### Test in Claude Desktop
 
 Open Claude Desktop and try:
-```
+
 What infrastructure automation tools do you have available?
-```
+
 
 ---
 
 ## 💬 Example Conversations
 
 ### Onboard a New Employee
-```
+
 Create a new user sarah.chen@demoac.com (Sarah Chen, Platform Engineer) 
 in the Engineering department, add her to the platform-team group, 
 and generate Terraform code for her AWS IAM access.
-```
+
 
 ### Provision Development Infrastructure
-```
+
 Generate Terraform configuration for:
 1. A free-tier EC2 instance called "dev-workstation"
 2. An IAM role with developer permissions
 3. Security group allowing SSH and HTTP
 
 Then create a PR with these changes.
-```
+
 
 ### Security Audit
-```
+
 Generate a comprehensive access review report for our SOC2 audit. 
 Include all Okta users, their group memberships, and any security 
 recommendations.
-```
+
 
 ### Full Workflow Demo
-```
+
 I need to set up infrastructure for a new "Data Science" team:
 1. Create an Okta group "data-science-team"
 2. Create user alex.kim@demoac.com (Alex Kim, Data Scientist)
@@ -310,7 +310,7 @@ I need to set up infrastructure for a new "Data Science" team:
 4. Generate IAM configuration with S3 and SageMaker access
 5. Create a PR with all changes
 6. Send a Slack notification to the platform-team
-```
+
 
 ---
 
@@ -329,7 +329,7 @@ I need to set up infrastructure for a new "Data Science" team:
 ---
 
 ## 📁 Project Structure
-```
+
 infra-automation-mcp/
 ├── .github/
 │   └── workflows/
@@ -351,10 +351,10 @@ infra-automation-mcp/
 ├── .gitignore
 ├── pyproject.toml
 └── README.md
-```
+
 
 ---
-```
+
 
 ## 🛠️ GitHub Actions Pipeline
 
@@ -434,7 +434,7 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ## 👤 Author
 
-**Faycal** - Systems Engineer
+**Faycal Ben Sassi** - IT Systems Engineer
 
 - GitHub: [@metalfa](https://github.com/metalfa)
 - LinkedIn: [https://www.linkedin.com/in/faycal-ben-sassi/]
