@@ -1,6 +1,5 @@
 # =============================================================================
 # EC2 Instance - Free Tier Eligible
-# Generated for: Lucy Lee (Security Engineer)
 # =============================================================================
 
 # Get the latest Amazon Linux 2 AMI (free tier eligible)
@@ -25,14 +24,16 @@ resource "aws_security_group" "lucy_lee_development_box_sg" {
   description = "Security group for lucy-lee-development-box"
   vpc_id      = module.vpc.vpc_id
 
+  # SSH access (restrict to your IP in production!)
   ingress {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["10.0.0.0/8"]  # Internal network only
-    description = "SSH access from internal network"
+    cidr_blocks = ["0.0.0.0/0"]  # TODO: Restrict to your IP
+    description = "SSH access"
   }
 
+  # Outbound internet access
   egress {
     from_port   = 0
     to_port     = 0
@@ -43,7 +44,6 @@ resource "aws_security_group" "lucy_lee_development_box_sg" {
   tags = {
     Name        = "lucy-lee-development-box-sg"
     Environment = "dev"
-    Owner       = "lucy.lee@demoaactivec.com"
     ManagedBy   = "terraform"
   }
 }
@@ -51,12 +51,15 @@ resource "aws_security_group" "lucy_lee_development_box_sg" {
 # EC2 Instance - t2.micro is free tier eligible
 resource "aws_instance" "lucy_lee_development_box" {
   ami                    = data.aws_ami.amazon_linux_2.id
-  instance_type          = "t2.micro"
+  instance_type          = "t2.micro"  # Free tier eligible!
   subnet_id              = module.vpc.public_subnets[0]
   vpc_security_group_ids = [aws_security_group.lucy_lee_development_box_sg.id]
+  
+  # Enable if you need SSH access
+  # key_name = "your-key-pair-name"
 
   root_block_device {
-    volume_size = 8
+    volume_size = 8    # GB - Free tier includes 30GB total
     volume_type = "gp2"
     encrypted   = true
   }
@@ -64,11 +67,11 @@ resource "aws_instance" "lucy_lee_development_box" {
   tags = {
     Name        = "lucy-lee-development-box"
     Environment = "dev"
-    Owner       = "lucy.lee@demoaactivec.com"
     ManagedBy   = "terraform"
   }
 }
 
+# Outputs
 output "lucy_lee_development_box_public_ip" {
   value       = aws_instance.lucy_lee_development_box.public_ip
   description = "Public IP of lucy-lee-development-box"
