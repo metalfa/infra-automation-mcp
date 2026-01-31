@@ -138,7 +138,68 @@ resource "aws_instance" "demo" {
               yum install -y httpd
               systemctl start httpd
               systemctl enable httpd
-              echo "<html><body><h1>Hello from MCP Auto-Deploy!</h1><p>Instance: ${var.instance_name}</p><p>Created by: Infrastructure Automation MCP</p><p>This instance will auto-destroy in 3 minutes.</p></body></html>" > /var/www/html/index.html
+              cat > /var/www/html/index.html << 'HTMLEOF'
+              <!DOCTYPE html>
+              <html>
+              <head>
+                  <title>Infrastructure Automation Demo</title>
+                  <style>
+                      body {
+                          font-family: Arial, sans-serif;
+                          max-width: 800px;
+                          margin: 50px auto;
+                          padding: 20px;
+                          background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+                          color: white;
+                          min-height: 100vh;
+                      }
+                      h1 { color: #00d4ff; }
+                      .box {
+                          background: rgba(255,255,255,0.1);
+                          padding: 20px;
+                          border-radius: 10px;
+                          margin: 20px 0;
+                      }
+                      .success { color: #00ff88; }
+                      .warning { color: #ffcc00; }
+                  </style>
+              </head>
+              <body>
+                  <h1>🚀 Infrastructure Automation MCP</h1>
+                  
+                  <div class="box">
+                      <h2 class="success">✅ EC2 Instance Deployed Successfully!</h2>
+                      <p>This instance was created automatically by:</p>
+                      <ul>
+                          <li>Natural language request to Claude</li>
+                          <li>MCP generated Terraform configuration</li>
+                          <li>GitHub Actions CI/CD pipeline</li>
+                      </ul>
+                  </div>
+                  
+                  <div class="box">
+                      <h2>📋 Demo Details</h2>
+                      <p><strong>Instance Type:</strong> t2.micro (Free Tier)</p>
+                      <p><strong>Created By:</strong> Faycal Ben Sassi</p>
+                      <p><strong>Purpose:</strong> ActiveCampaign Interview Demo</p>
+                  </div>
+                  
+                  <div class="box">
+                      <h2 class="warning">⏰ Auto-Destroy Notice</h2>
+                      <p>This instance will be automatically destroyed in <strong>3 minutes</strong> to avoid AWS charges.</p>
+                  </div>
+                  
+                  <div class="box">
+                      <h2>🔗 Project Links</h2>
+                      <p><a href="https://github.com/metalfa/infra-automation-mcp" style="color: #00d4ff;">GitHub Repository</a></p>
+                  </div>
+                  
+                  <p style="text-align: center; margin-top: 40px;">
+                      <em>"The future of DevOps is conversational"</em>
+                  </p>
+              </body>
+              </html>
+              HTMLEOF
               EOF
 
   tags = {
