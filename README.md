@@ -456,6 +456,6 @@ MIT License - see [LICENSE](LICENSE) for details.
 ---
 
 <p align="center">
-  <strong>Built to demonstrate AI-driven infrastructure automation</strong><br>
+  <strong>AI-driven infrastructure automation demo for ActiveCampaign — Systems Engineer technical assessment </strong><br>
   <em>"The best way to predict the future is to build it—and the future of DevOps is conversational"</em>
 </p>
