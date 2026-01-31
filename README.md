@@ -38,15 +38,37 @@ terraform apply
 
 # With This MCP
 
-You: "Create a new user bruce.lee@demoac.com in the Engineering department,
-      add them to the aws-developers group, generate Terraform code, and create a PR"
+##You: 
+1. Create an Okta user for "bruce.lee@demoac.com" (Bruce Lee, Security Engineer) create Security Engineer GOATs group, add him to it, and send him a slack welcome message
 
-Claude: Done! I've:
+2. Generate Terraform for a free-tier EC2 instance called "bruce-lee-devbox"
+
+3. Generate IAM configuration that maps to Okta for SSO
+
+4. Create a GitHub PR with these changes and send a slack message for approval
+
+##Claude: Done! I've:
         ✅ Created Bruce Lee in Okta
+		
         ✅ Added to aws-developers group
+		
         ✅ Generated production-ready Terraform
+		
         ✅ Created PR #47 for review
+		
         ✅ Sent Slack notification to approvers
+		
+		✅ Created EC2 instance after PR approval
+		
+		✅ Generated IAM configuration that maps to Okta
+		
+		✅ Triggered Github Action automation workfow
+		
+		✅ Terminated the EC2 instance after 3 minutes
+		
+		✅ Updated the project Backlog
+		
+		
 
 **Time: 30 seconds | Error-free | Complete audit trail**
 
