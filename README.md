@@ -98,9 +98,8 @@ Claude: Done! I've:
 | Slack Alerts | `send_slack_notification` | Notify teams of infrastructure changes |
 
 ---
-```
 ## 🏗️ Architecture
-mermaid
+```mermaid
 flowchart TB
     subgraph User["👤 User Interface"]
         CD[Claude Desktop]
@@ -132,12 +131,12 @@ flowchart TB
     TF --> S3
     GH --> GITHUB
     SL --> SLACK
-
+```
 
 ---
 
 ## 🔄 CI/CD Pipeline Flow
-mermaid
+```mermaid
 flowchart LR
     subgraph Request["1️⃣ Request"]
         A[Developer asks Claude]
@@ -167,8 +166,9 @@ flowchart LR
     end
     
     A --> B --> C --> D --> E --> F --> G --> H --> I --> J --> K --> L
-
 ```
+
+
 ---
 
 ## 📦 Installation
