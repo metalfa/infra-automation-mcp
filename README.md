@@ -6,13 +6,12 @@
 [![AWS](https://img.shields.io/badge/AWS-EC2%20%7C%20IAM%20%7C%20EKS-orange.svg)](https://aws.amazon.com/)
 [![Okta](https://img.shields.io/badge/Okta-Identity%20Management-blue.svg)](https://www.okta.com/)
 [![MCP](https://img.shields.io/badge/MCP-Model%20Context%20Protocol-green.svg)](https://modelcontextprotocol.io/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 > Transform infrastructure management from CLI commands to natural language — without sacrificing security, auditability, or DevOps best practices.
 
-This project is a **production-grade Model Context Protocol (MCP) server** that enables AI assistants (e.g., Claude) to manage enterprise infrastructure through **natural language**, while enforcing **GitOps, CI/CD, and human approval gates**.
+This project is a **production-grade Model Context Protocol (MCP) server** that enables AI assistants (Claude) to manage enterprise infrastructure through **natural language**, while enforcing **GitOps, CI/CD, and human approval gates**.
 
-Instead of memorizing CLIs, navigating cloud consoles, or hand-writing Terraform, engineers describe *intent* — the system safely turns that intent into **reviewed, auditable infrastructure changes**.
+Instead of memorizing CLIs, navigating cloud consoles, or hand-writing Terraform, users describe *intent* — the system safely turns that intent into **reviewed, auditable infrastructure changes**.
 
 ---
 
@@ -31,7 +30,7 @@ Rather than submitting static diagrams or documentation, I built a **fully funct
 |-------------|-------------------|
 | Okta Management | ✅ Full CRUD operations via MCP + Terraform generation |
 | EC2/EKS Provisioning | ✅ Auto-generated Terraform with free-tier defaults |
-| CI/CD Pipeline | ✅ GitHub Actions with plan → approve → apply → auto-destroy |
+| CI/CD Pipeline | ✅ GitHub Actions with Plan → Approve → Apply → Auto-destroy |
 | Infrastructure as Code | ✅ All resources defined in Terraform |
 | Security | ✅ GitOps workflow, human approval gates, no direct deployments |
 | Audit Trail | ✅ Complete Git history + GitHub Projects tracking |
@@ -116,7 +115,7 @@ terraform apply
 
 ---
 
-## 🧠 Core Design Principles
+## 🖌️ Core Design Principles
 
 | Principle | Implementation |
 |-----------|----------------|
@@ -185,7 +184,7 @@ terraform apply
 | User audit | `check_user_access` | Complete access report for any user |
 
 ---
-
+## 🏗️ Architecture Overview
 ```mermaid
 flowchart TB
     subgraph Input["🎯 INPUT"]
@@ -239,7 +238,7 @@ flowchart TB
 ```
 | Component | Purpose |
 |-----------|---------|
-| **👤 User** | Natural language request ("Create user and EC2 instance") |
+| **User** | Natural language request ("Create user and EC2 instance") |
 | **Claude Desktop** | AI assistant interface |
 | **MCP Server** | Policy enforcement, validation, orchestration |
 | **Create User** | Provisions new user in Okta |
@@ -486,6 +485,6 @@ IT Systems Engineer
 
 
 <p align="center">
-  <strong>Built to demonstrate AI-driven infrastructure automation</strong><br/><br/>
-  <em>"The best way to predict the future is to build it — and the future of DevOps is conversational."</em>
+  <strong>Built to demonstrate an AI-driven infrastructure automation for ActiveCampaign — Systems Engineer technical assessment</strong><br/><br/>
+     <em>"The best way to predict the future is to build it — and the future of DevOps is conversational."</em>
 </p>
