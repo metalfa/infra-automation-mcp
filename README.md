@@ -12,7 +12,7 @@
 Want to see it in action? Here's the fastest path:
 
 ### Option A: Watch the Video
-🎥 [Click here for a 5-minute demo](https://www.loom.com/share/f9834c96dbd34dc380d274aa623f28d1)
+🎥 <a href="https://www.loom.com/share/f9834c96dbd34dc380d274aa623f28d1" target="_blank">Click here for a 5-minute demo</a>
 
 ### Option B: Try It Yourself
 
@@ -24,7 +24,7 @@ Want to see it in action? Here's the fastest path:
    pip install -e .
 ```
 
-2. **Configure** (see [Installation](-Installation))
+2. **Configure** (see [Installation](#installation))
 
 3. **Ask Claude:**
 ```
