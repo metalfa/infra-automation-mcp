@@ -16,6 +16,33 @@ Instead of memorizing CLIs, navigating cloud consoles, or hand-writing Terraform
 
 ---
 
+## 📋 About This Project
+
+> **This project was built as a take-home exercise for the Systems Engineer position at ActiveCampaign.**
+
+**The Challenge:**
+> *"Design a CI/CD pipeline for managing an Okta instance and EC2 or ECS/EKS server set."*
+
+**My Approach:**
+
+Rather than submitting static diagrams or documentation, I built a **fully functional, production-grade system** that demonstrates:
+
+| Requirement | My Implementation |
+|-------------|-------------------|
+| Okta Management | ✅ Full CRUD operations via MCP + Terraform generation |
+| EC2/EKS Provisioning | ✅ Auto-generated Terraform with free-tier defaults |
+| CI/CD Pipeline | ✅ GitHub Actions with plan → approve → apply → auto-destroy |
+| Infrastructure as Code | ✅ All resources defined in Terraform |
+| Security | ✅ GitOps workflow, human approval gates, no direct deployments |
+| Audit Trail | ✅ Complete Git history + GitHub Projects tracking |
+| Notifications | ✅ Slack integration for approvals and status updates |
+
+**Why I Went Beyond:**
+
+I believe the best way to demonstrate DevOps expertise is to **build something real**. This project showcases not just *what* a CI/CD pipeline should do, but *how* modern AI-augmented infrastructure automation can transform the way teams work — reducing a 45-minute manual process to a 30-second conversation.
+
+---
+
 ## 🎯 Why This Exists
 
 ### The Problem with Traditional Infrastructure Work
@@ -161,43 +188,65 @@ terraform apply
 
 ## 🏗️ Architecture Overview
 ```mermaid
-flowchart TD
-    subgraph Human["👤 Human Operator"]
-        U["Natural Language Intent"]
-    end
-    
-    subgraph AI["🤖 AI Layer"]
-        A["Claude Desktop<br/>(AI Assistant)"]
-    end
-    
-    subgraph MCP["⚙️ MCP Server"]
-        M["Policy Enforcement<br/>Validation<br/>Orchestration"]
-    end
-    
-    subgraph GitOps["📦 GitOps Layer"]
-        G["GitHub Repository<br/>(Terraform Code)"]
-        GA["GitHub Actions<br/>(CI/CD Pipeline)"]
-        GP["GitHub Projects<br/>(Backlog → In Progress → Done)"]
-    end
-    
-    subgraph Cloud["☁️ Cloud Providers"]
-        C["AWS & Okta"]
-    end
-    
-    subgraph Notify["📢 Notifications"]
-        S["Slack"]
+flowchart TB
+    subgraph Input["🎯 INPUT"]
+        User["👤 Engineer<br/><i>'Create EC2 for new hire'</i>"]
     end
 
-    U --> A
-    A -->|MCP Protocol| M
-    M -->|Generate Code| G
-    M -->|Send Alerts| S
-    G -->|PR Trigger| GA
-    G -->|Auto-update| GP
-    GA -->|Plan/Apply| C
-    GA -->|Status| S
-    GA -->|Update Status| GP
+    subgraph Intelligence["🤖 AI LAYER"]
+        Claude["Claude Desktop"]
+        MCP["MCP Server<br/><small>Policy • Validation • Orchestration</small>"]
+    end
+
+    subgraph GitOps["📦 GITOPS WORKFLOW"]
+        Repo["GitHub Repo<br/><small>Terraform Code</small>"]
+        PR["Pull Request<br/><small>Human Review</small>"]
+        Actions["GitHub Actions<br/><small>CI/CD Pipeline</small>"]
+        Projects["GitHub Projects<br/><small>Backlog → In Progress → Done</small>"]
+    end
+
+    subgraph Infra["☁️ INFRASTRUCTURE"]
+        Okta["Okta<br/><small>Identity & Access</small>"]
+        AWS["AWS<br/><small>EC2 • IAM • EKS</small>"]
+    end
+
+    subgraphTic["📢 NOTIFICATIONS"]
+        Slack["Slack<br/><small>Alerts & Approvals</small>"]
+    end
+
+    User -->|Natural Language| Claude
+    Claude -->|MCP Protocol| MCP
+    MCP -->|Generate IaC| Repo
+    MCP -->|Alert Team| Slack
+    Repo -->|Opens| PR
+    PR -->|Triggers| Actions
+    PR -->|Creates Card| Projects
+    Actions -->|Plan Output| PR
+    Actions -->|On Merge| Infra
+    Actions -->|Update Status| Projects
+    Actions -->|Notify| Slack
+    Okta -.->|SSO Federation| AWS
 ```
+
+### 🔑 Key Properties
+
+| Property | Description |
+|----------|-------------|
+| 🛡️ **Human Approval Gates** | No deployment without PR review and merge |
+| 📜 **Immutable Audit Trail** | Every change tracked in Git history |
+| 🔒 **Policy-Enforced Execution** | MCP validates before any action |
+| 🚫 **Zero Direct AI Deployments** | AI assists; humans authorize |
+| 📊 **Automated Project Tracking** | Cards flow: Backlog → In Progress → Done |
+
+### 🔑 Key Properties
+
+| Property | Description |
+|----------|-------------|
+| 🛡️ **Human Approval Gates** | No deployment without PR review and merge |
+| 📜 **Immutable Audit Trail** | Every change tracked in Git history |
+| 🔒 **Policy-Enforced Execution** | MCP validates before any action |
+| 🚫 **Zero Direct AI Deployments** | AI assists; humans authorize |
+| 📊 **Automated Project Tracking** | Cards flow: Backlog → In Progress → Done |
 
 **Key Properties:**
 - ✅ Human approval gates at every deployment
