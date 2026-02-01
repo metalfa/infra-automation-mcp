@@ -7,9 +7,7 @@
 [![Okta](https://img.shields.io/badge/Okta-Identity%20Management-blue.svg)](https://www.okta.com/)
 [![MCP](https://img.shields.io/badge/MCP-Model%20Context%20Protocol-green.svg)](https://modelcontextprotocol.io/)
 
-## ⚡ Quick Start Demo (2 minutes)
-
-Want to see it in action? Here's the fastest path:
+## ⚡ Quick Start Demos
 
 ### Option A: Watch the Video
 🎥 <a href="https://www.loom.com/share/f9834c96dbd34dc380d274aa623f28d1" target="_blank">Click here for a 5-minute demo</a>
