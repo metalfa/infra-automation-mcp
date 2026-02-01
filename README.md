@@ -7,6 +7,33 @@
 [![Okta](https://img.shields.io/badge/Okta-Identity%20Management-blue.svg)](https://www.okta.com/)
 [![MCP](https://img.shields.io/badge/MCP-Model%20Context%20Protocol-green.svg)](https://modelcontextprotocol.io/)
 
+## ⚡ Quick Start Demo (2 minutes)
+
+Want to see it in action? Here's the fastest path:
+
+### Option A: Watch the Video
+🎥 [Click here for a 5-minute demo](https://www.loom.com/share/f9834c96dbd34dc380d274aa623f28d1)
+
+### Option B: Try It Yourself
+
+1. **Clone & Install**
+```bash
+   git clone https://github.com/metalfa/infra-automation-mcp.git
+   cd infra-automation-mcp
+   python -m venv venv && source venv/bin/activate
+   pip install -e .
+```
+
+2. **Configure** (see [Installation](-Installation))
+
+3. **Ask Claude:**
+```
+   Create a new user john.doe@example.com, generate Terraform 
+   for an EC2 instance, and show me the access review report.
+```
+
+4. **Watch the magic happen** ✨
+
 > Transform infrastructure management from CLI commands to natural language — without sacrificing security, auditability, or DevOps best practices.
 
 This project is a **production-grade Model Context Protocol (MCP) server** that enables AI assistants (Claude) to manage enterprise infrastructure through **natural language**, while enforcing **GitOps, CI/CD, and human approval gates**.
@@ -314,7 +341,7 @@ flowchart TB
 
 ---
 
-## 📦 Installation
+## Installation
 
 ### Prerequisites
 
