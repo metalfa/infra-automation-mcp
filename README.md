@@ -340,7 +340,7 @@ flowchart TB
 ```
 
 ---
-
+## 🧩
 ## Installation
 
 ### Prerequisites
