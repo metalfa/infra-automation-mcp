@@ -3,7 +3,7 @@
 **AI-Powered CI/CD for Okta, AWS & Terraform**
 
 [![Terraform](https://img.shields.io/badge/Terraform-1.6+-purple.svg)](https://www.terraform.io/)
-[![AWS](https://img.shields.io/badge/AWS-EC2%20%7C%20IAM%20%7C%20EKS-orange.svg)](https://aws.amazon.com/)
+[![AWS](https://img.shields.io/badge/AWS-EC2%20%7C%20IAM%20%7C%20S3-orange.svg)](https://aws.amazon.com/)
 [![Okta](https://img.shields.io/badge/Okta-Identity%20Management-blue.svg)](https://www.okta.com/)
 [![MCP](https://img.shields.io/badge/MCP-Model%20Context%20Protocol-green.svg)](https://modelcontextprotocol.io/)
 
@@ -56,7 +56,7 @@ Rather than submitting static diagrams or documentation, I built a **fully funct
 | Requirement | My Implementation |
 |-------------|-------------------|
 | Okta Management | ✅ Full CRUD operations via MCP + Terraform generation |
-| EC2/EKS Provisioning | ✅ Auto-generated Terraform with free-tier defaults |
+| EC2 Provisioning | ✅ Auto-generated Terraform with free-tier defaults |
 | CI/CD Pipeline | ✅ GitHub Actions with Plan → Approve → Apply → Auto-destroy |
 | Infrastructure as Code | ✅ All resources defined in Terraform |
 | Security | ✅ GitOps workflow, human approval gates, no direct deployments |
@@ -179,8 +179,8 @@ terraform apply
 
 | Capability | Tool | Description |
 |------------|------|-------------|
-| List EKS clusters | `aws_list_eks_clusters` | Kubernetes cluster discovery |
-| Describe cluster | `aws_describe_cluster` | Detailed cluster inspection |
+| List EC2 instances | `aws_list_ec2_clusters` | EC2 instance discovery |
+| Describe instance | `aws_describe_cluster` | Detailed instance inspection |
 | List IAM roles | `aws_list_iam_roles` | Access and policy auditing |
 | Identity check | `aws_get_identity` | Credential validation |
 
@@ -190,7 +190,7 @@ terraform apply
 |------------|------|-------------|
 | Generate EC2 instances | `terraform_generate_ec2` | develop instances with security groups |
 | IAM + Okta SSO | `terraform_generate_iam_user_with_okta` | Federated access with SAML mapping |
-| EKS cluster | `terraform_generate_eks` | Full cluster IaC with node groups |
+| Generate S3 Buckets | `terraform_generate_S3` | Version ID History |
 | IAM role | `terraform_generate_iam_role` | Scoped trust policies |
 
 ### CI/CD & GitOps
@@ -276,7 +276,7 @@ flowchart TB
 | **Pull Request** | Human review gate |
 | **GitHub Actions** | CI/CD pipeline (plan/apply/destroy) |
 | **GitHub Projects** | Automated tracking: Backlog → In Progress → Done |
-| **AWS** | EC2, IAM, EKS infrastructure |
+| **AWS** | EC2, IAM, S3 infrastructure |
 | **Slack** | Alerts, approvals, status notifications |
 
 ---
@@ -485,7 +485,7 @@ Set up infrastructure for the new Data Science team:
 |-----------------------|---------------------------|
 | **"Design a CI/CD pipeline"** | GitHub Actions workflow with plan, apply, and destroy stages |
 | **"Managing an Okta instance"** | Full Okta integration: users, groups, SSO mapping, access reviews |
-| **"EC2 or ECS/EKS server set"** | Terraform generation for EC2 (free-tier) and EKS clusters |
+| **"EC2 or ECS/EKS server set"** | Terraform generation for EC2 (free-tier) and S3 Buckets |
 | **"Open-ended by nature"** | Went beyond static design — built a working, AI-powered system |
 | **"Countless answers"** | Chose an innovative approach: natural language → infrastructure |
 
