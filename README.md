@@ -1,195 +1,258 @@
 # Infrastructure Automation MCP
 
-## AI-Powered CI/CD Pipeline for Okta, AWS & Terraform
+**AI-Powered CI/CD for Okta, AWS & Terraform**
 
-**Transform infrastructure management from CLI commands to natural conversations.**
+[![Terraform](https://img.shields.io/badge/Terraform-1.6+-purple.svg)](https://www.terraform.io/)
+[![AWS](https://img.shields.io/badge/AWS-EC2%20%7C%20IAM%20%7C%20EKS-orange.svg)](https://aws.amazon.com/)
+[![Okta](https://img.shields.io/badge/Okta-Identity%20Management-blue.svg)](https://www.okta.com/)
+[![MCP](https://img.shields.io/badge/MCP-Model%20Context%20Protocol-green.svg)](https://modelcontextprotocol.io/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-This MCP (Model Context Protocol) server enables AI assistants like Claude to manage enterprise infrastructure through natural language. Instead of writing Terraform, clicking through AWS consoles, or memorizing CLI commands, simply describe what you need.
+> Transform infrastructure management from CLI commands to natural language — without sacrificing security, auditability, or DevOps best practices.
+
+This project is a **production-grade Model Context Protocol (MCP) server** that enables AI assistants (e.g., Claude) to manage enterprise infrastructure through **natural language**, while enforcing **GitOps, CI/CD, and human approval gates**.
+
+Instead of memorizing CLIs, navigating cloud consoles, or hand-writing Terraform, engineers describe *intent* — the system safely turns that intent into **reviewed, auditable infrastructure changes**.
 
 ---
 
-## 🎯 What Problem Does This Solve?
+## 🎯 Why This Exists
 
-### Traditional Infrastructure Management
+### The Problem with Traditional Infrastructure Work
 
-## Create a user - requires knowing Okta CLI
+A simple onboarding flow often requires:
+```bash
+# Create Okta user
 okta users create --firstName Bruce --lastName Lee --email bruce@demoac.com
 
-## Find the group ID
+# Find group
 okta groups list | grep "Engineering"
 
-## Add user to group
-okta groups members add 00g123456789 00u987654321
+# Add user to group
+okta groups members add 00g123... 00u987...
 
-## Write Terraform manually
+# Write Terraform
 vim terraform/users.tf
 
-## Create PR with multiple git commands
-git checkout -b add-user-Bruce
+# Create PR
+git checkout -b add-user-bruce
 git add .
 git commit -m "Add user Bruce Lee"
-git push origin add-user-Bruce
-gh pr create --title "Add user Bruce Lee"
+git push origin add-user-bruce
+gh pr create
 
-## Wait for approval, then apply
+# Wait, review, apply
 terraform apply
+```
 
-**Time: 30-45 minutes | Error-prone | No audit trail**
+| Metric | Traditional Approach |
+|--------|---------------------|
+| ⏱️ Time | 30–45 minutes |
+| ⚠️ Errors | Common (typos, wrong IDs, missed steps) |
+| 📄 Audit | Fragmented across tools |
+| 🧠 Cognitive Load | High (multiple CLIs, consoles, contexts) |
 
-# With This MCP
+---
 
-##You: 
-1. Create an Okta user for "bruce.lee@demoac.com" (Bruce Lee, Security Engineer) create Security Engineer GOATs group, add him to it, and send him a slack welcome message
+### The Same Outcome with This MCP
+
+**You say:**
+```
+1. Create an Okta user for "bruce.lee@demoac.com" (Bruce Lee, Security Engineer), 
+   create a Security-Engineers group, add him to it, and send him a Slack welcome message
 
 2. Generate Terraform for a free-tier EC2 instance called "bruce-lee-devbox"
 
 3. Generate IAM configuration that maps to Okta for SSO
 
-4. Create a GitHub PR with these changes and send a slack message for approval
+4. Create a GitHub PR with these changes and send a Slack message for approval
+```
 
-##Claude: Done! I've:
-        ✅ Created Bruce Lee in Okta
-		
-        ✅ Added to aws-developers group
-		
-        ✅ Generated production-ready Terraform
-		
-        ✅ Created PR #47 for review
-		
-        ✅ Sent Slack notification to approvers
-		
-		✅ Created EC2 instance after PR approval
-		
-		✅ Generated IAM configuration that maps to Okta
-		
-		✅ Triggered Github Action automation workfow
-		
-		✅ Terminated the EC2 instance after 3 minutes
-		
-		✅ Updated the project Backlog
-		
-		
+**Claude responds:**
 
-**Time: 30 seconds | Error-free | Complete audit trail**
+| Step | Result |
+|------|--------|
+| ✅ | Created Okta user and assigned to groups |
+| ✅ | Sent personalized Slack welcome message with team and access details |
+| ✅ | Generated production-ready Terraform (IAM, EC2, SSO mapping) |
+| ✅ | Opened GitHub PR with full `terraform plan` output |
+| ✅ | Sent Slack notification to approvers for pending review |
+| ✅ | Applied infrastructure after human approval |
+| ✅ | Maintained complete Git-based audit trail |
 
+| Metric | MCP Approach |
+|--------|-------------|
+| ⏱️ Time | ~30 seconds |
+| ✅ Errors | Zero (validated, templated) |
+| 🔐 Audit | Complete Git history |
+| 🧠 Cognitive Load | Minimal (natural language) |
 
+---
 
-## 🚀 Features
+## 🧠 Core Design Principles
+
+| Principle | Implementation |
+|-----------|----------------|
+| **AI is an interface, not a control plane** | Claude assists; humans approve |
+| **No direct deployments** | All changes flow through GitHub PRs |
+| **Human approval required** | Merge gates enforce review |
+| **Least privilege by default** | Scoped IAM roles and policies |
+| **IaC remains source of truth** | Terraform state is authoritative |
+
+> This system **augments** DevOps workflows — it does not bypass them.
+
+---
+
+## 🚀 Key Capabilities
 
 ### Identity Management (Okta)
-| Feature | Tool | Description |
-|---------|------|-------------|
-| List Users | `okta_list_users` | Search and list all Okta users |
-| List Groups | `okta_list_groups` | View all groups and memberships |
-| Create User | `okta_create_user` | Create users with full profile + auto-generate Terraform |
-| Create Group | `okta_create_group` | Create groups + generate IaC configuration |
+
+| Capability | Tool | Description |
+|------------|------|-------------|
+| List users | `okta_list_users` | Search and audit user accounts |
+| List groups | `okta_list_groups` | Inspect group membership |
+| Create user | `okta_create_user` | Provision users + generate IaC |
+| Create group | `okta_create_group` | Group creation + Terraform output |
+
+### Collaboration & Notifications (Slack)
+
+| Capability | Tool | Description |
+|------------|------|-------------|
+| Welcome message | `send_slack_notification` | Onboarding message with team, role, access info |
+| PR approval alert | `send_slack_notification` | Notifies reviewers when infrastructure PR is ready |
+| Deployment status | `send_slack_notification` | Confirms apply/destroy completion |
 
 ### AWS Infrastructure
-| Feature | Tool | Description |
-|---------|------|-------------|
-| List EKS Clusters | `aws_list_eks_clusters` | View all Kubernetes clusters |
-| Describe Cluster | `aws_describe_cluster` | Get detailed cluster information |
-| List IAM Roles | `aws_list_iam_roles` | Audit IAM roles and policies |
-| Get Identity | `aws_get_identity` | Verify current AWS credentials |
+
+| Capability | Tool | Description |
+|------------|------|-------------|
+| List EKS clusters | `aws_list_eks_clusters` | Kubernetes cluster discovery |
+| Describe cluster | `aws_describe_cluster` | Detailed cluster inspection |
+| List IAM roles | `aws_list_iam_roles` | Access and policy auditing |
+| Identity check | `aws_get_identity` | Credential validation |
 
 ### Terraform Generation
-| Feature | Tool | Description |
-|---------|------|-------------|
-| Generate EC2 | `terraform_generate_ec2_free_tier` | Create free-tier EC2 instance config |
-| Generate IAM + Okta | `terraform_generate_iam_user_with_okta` | IAM user with Okta SSO mapping |
-| Generate EKS | `terraform_generate_eks` | Full EKS cluster configuration |
-| Generate IAM Role | `terraform_generate_iam_role` | IAM role with trust policies |
 
-### CI/CD Pipeline
-| Feature | Tool | Description |
-|---------|------|-------------|
-| Create PR | `create_infrastructure_pr` | Auto-create GitHub PR with changes |
+| Capability | Tool | Description |
+|------------|------|-------------|
+| Generate EC2 instances | `terraform_generate_ec2` | develop instances with security groups |
+| IAM + Okta SSO | `terraform_generate_iam_user_with_okta` | Federated access with SAML mapping |
+| EKS cluster | `terraform_generate_eks` | Full cluster IaC with node groups |
+| IAM role | `terraform_generate_iam_role` | Scoped trust policies |
+
+### CI/CD & GitOps
+
+| Capability | Tool | Description |
+|------------|------|-------------|
+| Create PR | `create_infrastructure_pr` | Automated GitHub PR creation |
 | List PRs | `list_open_prs` | View pending infrastructure changes |
-| Pipeline Status | `list_pipeline_runs` | Monitor CI/CD workflow runs |
-| Full Workflow | `complete_infrastructure_workflow` | End-to-end: Generate → PR → Notify |
+| Pipeline status | `list_pipeline_runs` | CI/CD workflow visibility |
+| Full workflow | `complete_infrastructure_workflow` | End-to-end: Generate → PR → Notify → Deploy |
+| Project tracking | GitHub Projects | Auto-updates: Backlog → In Progress → Done |
 
 ### Compliance & Security
-| Feature | Tool | Description |
-|---------|------|-------------|
-| Access Review | `generate_access_review` | SOC2/ISO27001 compliance reports |
-| User Access Audit | `check_user_access` | Complete access report for any user |
 
-### Notifications
-| Feature | Tool | Description |
-|---------|------|-------------|
-| Slack Alerts | `send_slack_notification` | Notify teams of infrastructure changes |
-
----
-## 🏗️ Architecture
-```mermaid
-flowchart TB
-    subgraph User["👤 User Interface"]
-        CD[Claude Desktop]
-        NL["'Create EC2 for dev team'"]
-    end
-    
-    subgraph MCP["🤖 Infrastructure Automation MCP"]
-        direction LR
-        OK[Okta Client]
-        AWS[AWS Client]
-        TF[Terraform Generator]
-        GH[GitHub Client]
-        SL[Slack Client]
-    end
-    
-    subgraph Services["☁️ External Services"]
-        direction LR
-        OKTA[(Okta)]
-        AWSS[(AWS)]
-        GITHUB[(GitHub)]
-        SLACK[(Slack)]
-        S3[(S3 State)]
-    end
-    
-    CD --> NL
-    NL --> MCP
-    OK --> OKTA
-    AWS --> AWSS
-    TF --> S3
-    GH --> GITHUB
-    SL --> SLACK
-```
+| Capability | Tool | Description |
+|------------|------|-------------|
+| Access review | `generate_access_review` | SOC2 / ISO27001 compliance reports |
+| User audit | `check_user_access` | Complete access report for any user |
 
 ---
 
-## 🔄 CI/CD Pipeline Flow
+## 🏗️ Architecture Overview
 ```mermaid
-flowchart LR
-    subgraph Request["1️⃣ Request"]
-        A[Developer asks Claude]
+flowchart TD
+    subgraph Human["👤 Human Operator"]
+        U["Natural Language Intent"]
     end
     
-    subgraph Generate["2️⃣ Generate"]
-        B[MCP creates Terraform]
-        C[Creates GitHub PR]
-        D[Sends Slack alert]
+    subgraph AI["🤖 AI Layer"]
+        A["Claude Desktop<br/>(AI Assistant)"]
     end
     
-    subgraph Review["3️⃣ Review"]
-        E[Team reviews PR]
-        F[Approves changes]
+    subgraph MCP["⚙️ MCP Server"]
+        M["Policy Enforcement<br/>Validation<br/>Orchestration"]
     end
     
-    subgraph Deploy["4️⃣ Deploy"]
-        G[GitHub Actions runs]
-        H[terraform init]
-        I[terraform apply]
-        J[Resources created]
+    subgraph GitOps["📦 GitOps Layer"]
+        G["GitHub Repository<br/>(Terraform Code)"]
+        GA["GitHub Actions<br/>(CI/CD Pipeline)"]
+        GP["GitHub Projects<br/>(Backlog → In Progress → Done)"]
     end
     
-    subgraph Cleanup["5️⃣ Auto-Cleanup"]
-        K[Wait 3 minutes]
-        L[terraform destroy]
+    subgraph Cloud["☁️ Cloud Providers"]
+        C["AWS & Okta"]
     end
     
-    A --> B --> C --> D --> E --> F --> G --> H --> I --> J --> K --> L
+    subgraph Notify["📢 Notifications"]
+        S["Slack"]
+    end
+
+    U --> A
+    A -->|MCP Protocol| M
+    M -->|Generate Code| G
+    M -->|Send Alerts| S
+    G -->|PR Trigger| GA
+    G -->|Auto-update| GP
+    GA -->|Plan/Apply| C
+    GA -->|Status| S
+    GA -->|Update Status| GP
 ```
 
+**Key Properties:**
+- ✅ Human approval gates at every deployment
+- ✅ Immutable audit trail in Git
+- ✅ Policy-enforced execution
+- ✅ Zero direct AI deployments to production
+- ✅ Automated project tracking (Backlog → In Progress → Done)
+
+---
+
+## 🔐 Security Model
+
+| Security Feature | Implementation |
+|------------------|----------------|
+| **No hardcoded secrets** | Environment variables only |
+| **Credential isolation** | Separate tokens per service |
+| **Git-backed audit trail** | Every change tracked |
+| **Least-privilege IAM** | Scoped roles and policies |
+| **State encryption** | Terraform state encrypted in S3 |
+| **MFA-ready** | Okta policies support enforcement |
+| **Cost protection** | Auto-destroy demo resources after 3 minutes |
+
+---
+
+## 🛠️ CI/CD Pipeline (GitHub Actions)
+
+### On Pull Request
+```
+┌─────────────────┐
+│ terraform fmt   │ → Code formatting check
+├─────────────────┤
+│ terraform init  │ → Initialize providers
+├─────────────────┤
+│ terraform plan  │ → Preview changes
+├─────────────────┤
+│ Post to PR      │ → Plan visible to reviewers
+├─────────────────┤
+│ Update Project  │ → Moves card to "Backlog"
+└─────────────────┘
+```
+
+### On Merge to Main
+```
+┌─────────────────┐
+│ terraform apply │ → Create resources
+├─────────────────┤
+│ Wait 3 minutes  │ → Demo observation window
+├─────────────────┤
+│ terraform destroy│ → Auto-cleanup (cost control)
+├─────────────────┤
+│ Slack notify    │ → Confirm completion
+├─────────────────┤
+│ Update Project  │ → Moves card to "Done"
+└─────────────────┘
+```
 
 ---
 
@@ -197,227 +260,107 @@ flowchart LR
 
 ### Prerequisites
 
-- Python 3.10+
-- Terraform 1.6+
-- AWS CLI configured
-- Okta organization with API access
-- GitHub account
-- Claude Desktop
+| Requirement | Version |
+|-------------|---------|
+| Python | 3.10+ |
+| Terraform | 1.6+ |
+| AWS CLI | Configured |
+| Okta | API access |
+| GitHub | Account + PAT |
+| Claude Desktop | Latest |
 
-# Quick Start
-
-## Clone the repository
+### Quick Start
+```bash
+# Clone the repository
 git clone https://github.com/metalfa/infra-automation-mcp.git
 cd infra-automation-mcp
 
-## Create virtual environment
+# Create virtual environment
 python -m venv venv
 
 # Activate (Windows)
 .\venv\Scripts\Activate.ps1
 
-## Activate (Mac/Linux)
+# Activate (Mac/Linux)
 source venv/bin/activate
 
-## Install the package
+# Install package
 pip install -e .
+```
 
+### Configuration
 
-## Configuration
-
-1. **Copy the environment template:**
-bash
+1. **Create environment file:**
+```bash
    cp .env.example .env
+```
 
-
-2. **Edit `.env` with your credentials:**
-env
-   ## Okta
+2. **Configure credentials in `.env`:**
+```env
+   # Okta
    OKTA_BASE_URL=https://your-org.okta.com
-   
    OKTA_API_TOKEN=your-okta-token
-
-   ## AWS
+   
+   # AWS
    AWS_REGION=us-east-1
-   
    AWS_ACCESS_KEY_ID=your-access-key
-   
    AWS_SECRET_ACCESS_KEY=your-secret-key
-
-   ## GitHub
-   GITHUB_TOKEN=your-github-pat
    
+   # GitHub
+   GITHUB_TOKEN=your-github-pat
    GITHUB_REPO=your-username/infra-automation-mcp
-
-   ## Slack (optional)
+   
+   # Slack
    SLACK_WEBHOOK_URL=https://hooks.slack.com/services/xxx
-
-   ## Terraform
-   TERRAFORM_WORKING_DIR=./terraform
-
-
-3. **Configure Claude Desktop:**
 ```
-   Edit `%APPDATA%\Claude\claude_desktop_config.json` (Windows) or `~/Library/Application Support/Claude/claude_desktop_config.json` (Mac):
-json
-   {
-     "mcpServers": {
-       "infra-automation": {
-         "command": "C:\\path\\to\\venv\\Scripts\\python.exe",
-         "args": ["-m", "infra_automation_mcp.server"],
-         "cwd": "C:\\path\\to\\infra-automation-mcp",
-         "env": {
-           "OKTA_BASE_URL": "https://your-org.okta.com",
-           "OKTA_API_TOKEN": "your-token",
-           "AWS_REGION": "us-east-1",
-           "AWS_ACCESS_KEY_ID": "your-key",
-           "AWS_SECRET_ACCESS_KEY": "your-secret",
-           "GITHUB_TOKEN": "your-github-token",
-           "GITHUB_REPO": "your-username/infra-automation-mcp"
-         }
-       }
-     }
-   }
 
+3. **Register MCP server in Claude Desktop**, restart, and you're ready.
+
+---
+
+## 💬 Example Use Cases
+
+### 👤 Employee Onboarding
 ```
-4. **Restart Claude Desktop**
-
----
-
-## 🧪 Testing
-
-### Verify MCP is Running
-
-python -m infra_automation_mcp.server
-## Should output: Starting Infrastructure Automation MCP Server...
-
-
-### Test in Claude Desktop
-
-Open Claude Desktop and try:
-
-What infrastructure automation tools do you have available?
-
-
----
-
-## 💬 Example Conversations
-
-### Onboard a New Employee
-
-Create a new user sarah.chen@demoac.com (Sarah Chen, Platform Engineer) 
-in the Engineering department, add her to the platform-team group, 
-and generate Terraform code for her AWS IAM access.
-
-
-### Provision Development Infrastructure
-
-Generate Terraform configuration for:
-1. A free-tier EC2 instance called "dev-workstation"
-2. An IAM role with developer permissions
-3. Security group allowing SSH and HTTP
-
-Then create a PR with these changes.
-
-
-### Security Audit
-
-Generate a comprehensive access review report for our SOC2 audit. 
-Include all Okta users, their group memberships, and any security 
-recommendations.
-
-
-### Full Workflow Demo
-
-I need to set up infrastructure for a new "Data Science" team:
-1. Create an Okta group "data-science-team"
-2. Create user alex.kim@demoac.com (Alex Kim, Data Scientist)
-3. Generate EC2 instance Terraform for their workstation
-4. Generate IAM configuration with S3 and SageMaker access
-5. Create a PR with all changes
-6. Send a Slack notification to the platform-team
-
-
----
-
-## 🔐 Security Features
-
-| Feature | Implementation |
-|---------|----------------|
-| **No Hardcoded Secrets** | All credentials via environment variables |
-| **GitOps Workflow** | All changes through PR review |
-| **Audit Trail** | Complete history in Git |
-| **Auto-Destroy** | Demo resources auto-delete after 3 minutes |
-| **Least Privilege** | IAM roles scoped to minimum required |
-| **State Encryption** | Terraform state encrypted in S3 |
-| **MFA Ready** | Okta policies support MFA enforcement |
-
----
+Create user maria.garcia@company.com (Maria Garcia, DevOps Engineer),
+add her to the devops-team group, generate Terraform for her IAM access,
+create a PR, and send a Slack welcome message.
 ```
-## 📁 Project Structure
 
-infra-automation-mcp/
-├── .github/
-│   └── workflows/
-│       └── terraform-deploy.yml    # CI/CD pipeline
-├── src/
-│   └── infra_automation_mcp/
-│       ├── __init__.py
-│       ├── server.py               # MCP server & tools
-│       ├── okta_client.py          # Okta API client
-│       ├── aws_client.py           # AWS API client
-│       ├── terraform_client.py     # Terraform generator
-│       ├── github_client.py        # GitHub API client
-│       └── slack_client.py         # Slack notifications
-├── terraform/
-│   └── environments/
-│       └── dev/
-│           └── main.tf             # Terraform configuration
-├── .env.example                    # Environment template
-├── .gitignore
-├── pyproject.toml
-└── README.md
-
+### 🖥️ Development Environment
 ```
+Provision a free-tier EC2 instance called "dev-sandbox" with SSH access,
+generate the Terraform code, and create a PR for review.
+```
+
+### 🔒 SOC2 Access Review
+```
+Generate a comprehensive access review report showing all Okta users,
+their group memberships, inactive accounts, and security recommendations.
+```
+
+### 🚀 Full Infrastructure Workflow
+```
+Set up infrastructure for the new Data Science team:
+1. Create Okta group "data-science"
+2. Create user alex.kim@company.com
+3. Generate EC2 and IAM Terraform
+4. Create PR and notify approvers via Slack
+```
+
+> All driven through conversation — all enforced through GitOps.
+
 ---
 
+## 📊 Business Impact
 
-## 🛠️ GitHub Actions Pipeline
-
-The included CI/CD pipeline automatically:
-
-1. **On Pull Request:**
-   - Runs `terraform fmt` (formatting check)
-   - Runs `terraform validate` (syntax check)
-   - Runs `terraform plan` (preview changes)
-   - Posts plan as PR comment
-
-2. **On Merge to Main:**
-   - Runs `terraform apply` (creates resources)
-   - Waits 3 minutes (demo time)
-   - Runs `terraform destroy` (cleanup)
-   - Sends Slack notifications
-
----
-
-## 🎓 Why This Approach?
-
-| Traditional DevOps | AI-Powered DevOps |
-|--------------------|-------------------|
-| Learn multiple CLIs | Natural language |
-| Write YAML/HCL manually | Auto-generated code |
-| Context switch between tools | Single conversation |
-| Error-prone copy/paste | Validated configurations |
-| Manual documentation | Self-documenting |
-| Tribal knowledge | Accessible to everyone |
-
-### Business Value
-
-- **90% faster** infrastructure provisioning
-- **Zero** manual errors in configuration
-- **100%** audit trail compliance
-- **Democratized** infrastructure access
-- **Reduced** onboarding time for new engineers
+| Metric | Traditional | With MCP | Improvement |
+|--------|-------------|----------|-------------|
+| Provisioning time | 30-45 min | ~30 sec | **98% faster** |
+| Manual errors | Common | Zero | **Eliminated** |
+| Audit compliance | Partial | 100% | **Complete** |
+| Onboarding friction | High | Minimal | **Streamlined** |
+| Operational risk | Elevated | Reduced | **Controlled** |
 
 ---
 
@@ -429,55 +372,46 @@ The included CI/CD pipeline automatically:
 - [x] GitHub PR automation
 - [x] Slack notifications
 - [x] Auto-destroy for cost control
-- [ ] Azure AD integration
-- [ ] Intune integration
-- [ ] Kandji AD integration
-- [ ] Ansible integration
+- [ ] Azure AD / Entra ID integration
+- [ ] Intune & Kandji MDM support
 - [ ] Kubernetes manifest generation
+- [ ] Policy-as-Code (OPA / Sentinel)
 - [ ] Cost estimation (Infracost)
-- [ ] Policy as Code (OPA/Sentinel)
-- [ ] Multi-cloud support
+- [ ] Multi-cloud support (GCP, Azure)
 
 ---
 
-## 🤝 Contributing
+## 🎓 Why This Matters
 
-Contributions are welcome! Please:
+| Traditional DevOps | AI-Augmented DevOps |
+|--------------------|---------------------|
+| CLI memorization | Intent-driven requests |
+| Manual IaC authoring | Generated & validated code |
+| Constant tool switching | Single conversational interface |
+| Tribal knowledge silos | Accessible, documented workflows |
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
----
-
-## 📄 License
-
-MIT License - see [LICENSE](LICENSE) for details.
+> **The future of DevOps is conversational** — where engineers focus on *what* needs to happen, not *how* to execute it across dozens of tools.
 
 ---
 
 ## 👤 Author
 
-**Faycal Ben Sassi** - IT Systems Engineer
+**Faycal Ben Sassi**  
+IT Systems Engineer
 
-- GitHub: [@metalfa](https://github.com/metalfa)
-- LinkedIn: [https://www.linkedin.com/in/faycal-ben-sassi/]
-- Email: [bensassi.faysel@gmail.com]
+[![GitHub](https://img.shields.io/badge/GitHub-metalfa-181717?logo=github)](https://github.com/metalfa)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Faycal%20Ben%20Sassi-0A66C2?logo=linkedin)](https://www.linkedin.com/in/faycal-ben-sassi/)
+[![Email](https://img.shields.io/badge/Email-bensassi.faysel%40gmail.com-EA4335?logo=gmail)](mailto:bensassi.faysel@gmail.com)
 
 ---
 
-## 🙏 Acknowledgments
+## 📄 License
 
-- [Anthropic](https://anthropic.com) - Claude AI and MCP Protocol
-- [HashiCorp](https://hashicorp.com) - Terraform
-- [Okta](https://okta.com) - Identity Management
-- [AWS](https://aws.amazon.com) - Cloud Infrastructure
+MIT License — see [LICENSE](LICENSE) for details.
 
 ---
 
 <p align="center">
-  <strong>AI-driven infrastructure automation demo for ActiveCampaign — Systems Engineer technical assessment </strong><br>
-  <em>"The best way to predict the future is to build it—and the future of DevOps is conversational"</em>
+  <strong>Built to demonstrate AI-driven infrastructure automation</strong><br/><br/>
+  <em>"The best way to predict the future is to build it — and the future of DevOps is conversational."</em>
 </p>
