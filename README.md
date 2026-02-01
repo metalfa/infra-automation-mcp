@@ -186,47 +186,74 @@ terraform apply
 
 ---
 
-## 🏗️ Architecture Overview
 ```mermaid
 flowchart TB
     subgraph Input["🎯 INPUT"]
-        User["👤 Engineer<br/><i>'Create EC2 for new hire'</i>"]
+        User["👤 User"]
     end
 
     subgraph Intelligence["🤖 AI LAYER"]
         Claude["Claude Desktop"]
-        MCP["MCP Server<br/><small>Policy • Validation • Orchestration</small>"]
+        MCP["MCP Server"]
+    end
+
+    subgraph OktaOps["🔐 OKTA OPERATIONS"]
+        CreateUser["Create User"]
+        CreateGroup["Create Group"]
+        AssignGroup["Assign to Group"]
     end
 
     subgraph GitOps["📦 GITOPS WORKFLOW"]
-        Repo["GitHub Repo<br/><small>Terraform Code</small>"]
-        PR["Pull Request<br/><small>Human Review</small>"]
-        Actions["GitHub Actions<br/><small>CI/CD Pipeline</small>"]
-        Projects["GitHub Projects<br/><small>Backlog → In Progress → Done</small>"]
+        Repo["GitHub Repo"]
+        PR["Pull Request"]
+        Actions["GitHub Actions"]
+        Projects["GitHub Projects"]
     end
 
     subgraph Infra["☁️ INFRASTRUCTURE"]
-        Okta["Okta<br/><small>Identity & Access</small>"]
-        AWS["AWS<br/><small>EC2 • IAM • EKS</small>"]
+        Okta["Okta"]
+        AWS["AWS"]
     end
 
-    subgraphTic["📢 NOTIFICATIONS"]
-        Slack["Slack<br/><small>Alerts & Approvals</small>"]
+    subgraph Notify["📢 NOTIFICATIONS"]
+        Slack["Slack"]
     end
 
     User -->|Natural Language| Claude
     Claude -->|MCP Protocol| MCP
+    MCP -->|Create User| CreateUser
+    MCP -->|Create Group| CreateGroup
+    CreateUser --> AssignGroup
+    CreateGroup --> AssignGroup
+    AssignGroup -->|Sync to| Okta
     MCP -->|Generate IaC| Repo
     MCP -->|Alert Team| Slack
     Repo -->|Opens| PR
     PR -->|Triggers| Actions
     PR -->|Creates Card| Projects
     Actions -->|Plan Output| PR
-    Actions -->|On Merge| Infra
+    Actions -->|On Merge| AWS
     Actions -->|Update Status| Projects
     Actions -->|Notify| Slack
     Okta -.->|SSO Federation| AWS
 ```
+| Component | Purpose |
+|-----------|---------|
+| **👤 User** | Natural language request ("Create user and EC2 instance") |
+| **Claude Desktop** | AI assistant interface |
+| **MCP Server** | Policy enforcement, validation, orchestration |
+| **Create User** | Provisions new user in Okta |
+| **Create Group** | Creates Okta group for access control |
+| **Assign to Group** | Adds user to appropriate group |
+| **Okta** | Identity & Access Management (syncs users/groups) |
+| **GitHub Repo** | Terraform code storage |
+| **Pull Request** | Human review gate |
+| **GitHub Actions** | CI/CD pipeline (plan/apply/destroy) |
+| **GitHub Projects** | Automated tracking: Backlog → In Progress → Done |
+| **AWS** | EC2, IAM, EKS infrastructure |
+| **Slack** | Alerts, approvals, status notifications |
+
+---
 
 ### 🔑 Key Properties
 
@@ -237,23 +264,6 @@ flowchart TB
 | 🔒 **Policy-Enforced Execution** | MCP validates before any action |
 | 🚫 **Zero Direct AI Deployments** | AI assists; humans authorize |
 | 📊 **Automated Project Tracking** | Cards flow: Backlog → In Progress → Done |
-
-### 🔑 Key Properties
-
-| Property | Description |
-|----------|-------------|
-| 🛡️ **Human Approval Gates** | No deployment without PR review and merge |
-| 📜 **Immutable Audit Trail** | Every change tracked in Git history |
-| 🔒 **Policy-Enforced Execution** | MCP validates before any action |
-| 🚫 **Zero Direct AI Deployments** | AI assists; humans authorize |
-| 📊 **Automated Project Tracking** | Cards flow: Backlog → In Progress → Done |
-
-**Key Properties:**
-- ✅ Human approval gates at every deployment
-- ✅ Immutable audit trail in Git
-- ✅ Policy-enforced execution
-- ✅ Zero direct AI deployments to production
-- ✅ Automated project tracking (Backlog → In Progress → Done)
 
 ---
 
@@ -443,6 +453,26 @@ Set up infrastructure for the new Data Science team:
 
 ---
 
+## 🎯 How This Addresses the Challenge
+
+| Challenge Requirement | How This Project Delivers |
+|-----------------------|---------------------------|
+| **"Design a CI/CD pipeline"** | GitHub Actions workflow with plan, apply, and destroy stages |
+| **"Managing an Okta instance"** | Full Okta integration: users, groups, SSO mapping, access reviews |
+| **"EC2 or ECS/EKS server set"** | Terraform generation for EC2 (free-tier) and EKS clusters |
+| **"Open-ended by nature"** | Went beyond static design — built a working, AI-powered system |
+| **"Countless answers"** | Chose an innovative approach: natural language → infrastructure |
+
+### 💡 What Makes This Solution Different
+
+1. **It's Real** — Not diagrams, but working code you can clone and run
+2. **It's Innovative** — AI-powered interface while maintaining GitOps discipline
+3. **It's Practical** — Solves actual pain points (onboarding, provisioning, compliance)
+4. **It's Safe** — Human approval gates, auto-destroy, least-privilege defaults
+5. **It's Extensible** — Modular design ready for Entra ID, Intune, Kubernetes, multi-cloud
+
+---
+
 ## 👤 Author
 
 **Faycal Ben Sassi**  
@@ -454,11 +484,6 @@ IT Systems Engineer
 
 ---
 
-## 📄 License
-
-MIT License — see [LICENSE](LICENSE) for details.
-
----
 
 <p align="center">
   <strong>Built to demonstrate AI-driven infrastructure automation</strong><br/><br/>
