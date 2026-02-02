@@ -77,7 +77,7 @@ A simple onboarding flow often requires:
 okta users create --firstName Bruce --lastName Lee --email bruce@demoac.com
 
 # Find group
-okta groups list | grep "Engineering"
+okta groups list | grep "Security-Engineering"
 
 # Add user to group
 okta groups members add 00g123... 00u987...
@@ -110,7 +110,7 @@ terraform apply
 **You say:**
 ```
 1. Create an Okta user for "bruce.lee@demoac.com" (Bruce Lee, Security Engineer), 
-   create a Security-Engineers group, add him to it, and send him a Slack welcome message
+   create a Security-Engineering group, add him to it, and send him a Slack welcome message
 
 2. Generate Terraform for a free-tier EC2 instance called "bruce-lee-devbox"
 
