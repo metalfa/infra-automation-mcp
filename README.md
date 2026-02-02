@@ -397,7 +397,7 @@ pip install -e .
    SLACK_WEBHOOK_URL=https://hooks.slack.com/services/xxx
 ```
 
-3. **Register MCP server in Claude Desktop**, restart, and you're ready.
+3. **Register MCP server in Claude Desktop and update the claude_desktop_config file**, restart, and you're ready.
 
 ---
 
