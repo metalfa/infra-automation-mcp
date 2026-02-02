@@ -177,8 +177,8 @@ terraform apply
 
 | Capability | Tool | Description |
 |------------|------|-------------|
-| List EC2 instances | `aws_list_ec2_clusters` | EC2 instance discovery |
-| Describe instance | `aws_describe_cluster` | Detailed instance inspection |
+| List EC2 instances | `aws_list_ec2_instances` | EC2 instance discovery |
+| Describe instance | `aws_describe_instances` | Detailed instance inspection |
 | List IAM roles | `aws_list_iam_roles` | Access and policy auditing |
 | Identity check | `aws_get_identity` | Credential validation |
 
