@@ -1,5 +1,5 @@
 # =============================================================================
-# Terraform Configuration - Auto-Deploy Demo
+# Terraform Configuration - SAML-Ready Federation Setup
 # =============================================================================
 
 terraform {
@@ -12,56 +12,193 @@ terraform {
     }
   }
 
-  # Store state in S3 (we'll create this bucket manually first)
   backend "s3" {
-    bucket         = "infra-automation-tfstate-activecampaign-demo"
-    key            = "dev/terraform.tfstate"
-    region         = "us-east-1"
-    encrypt        = true
+    bucket  = "infra-automation-tfstate-activecampaign-demo"
+    key     = "dev/terraform.tfstate"
+    region  = "us-east-1"
+    encrypt = true
   }
 }
 
 provider "aws" {
-  region = var.aws_region
-
+  region = "us-east-1"
+  
   default_tags {
     tags = {
-      Environment   = var.environment
-      ManagedBy     = "terraform"
-      Project       = "infra-automation-mcp"
-      AutoDestroy   = "true"
-      CreatedBy     = "github-actions"
+      Environment = "dev"
+      ManagedBy   = "terraform"
+      Project     = "infra-automation-mcp"
     }
   }
 }
 
 # =============================================================================
-# Variables
+# SECTION 1: IAM Groups (Okta Group Mapping)
 # =============================================================================
 
-variable "aws_region" {
-  description = "AWS region"
-  type        = string
-  default     = "us-east-1"
+# Platform Engineers Group
+resource "aws_iam_group" "platform_engineers" {
+  name = "platform-engineers"
+  path = "/okta-synced/"
 }
 
-variable "environment" {
-  description = "Environment name"
-  type        = string
-  default     = "dev"
+resource "aws_iam_group_policy_attachment" "platform_engineers_power" {
+  group      = aws_iam_group.platform_engineers.name
+  policy_arn = "arn:aws:iam::aws:policy/PowerUserAccess"
 }
 
-variable "instance_name" {
-  description = "Name for the EC2 instance"
-  type        = string
-  default     = "mcp-demo-instance"
+# Developers Group
+resource "aws_iam_group" "developers" {
+  name = "developers"
+  path = "/okta-synced/"
+}
+
+resource "aws_iam_group_policy_attachment" "developers_ec2" {
+  group      = aws_iam_group.developers.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2FullAccess"
+}
+
+resource "aws_iam_group_policy_attachment" "developers_s3" {
+  group      = aws_iam_group.developers.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
+}
+
+# ReadOnly Group (Auditors)
+resource "aws_iam_group" "readonly" {
+  name = "readonly-users"
+  path = "/okta-synced/"
+}
+
+resource "aws_iam_group_policy_attachment" "readonly_policy" {
+  group      = aws_iam_group.readonly.name
+  policy_arn = "arn:aws:iam::aws:policy/ReadOnlyAccess"
 }
 
 # =============================================================================
-# Data Sources
+# SECTION 2: Demo IAM Users (Linked to Okta via Tags)
 # =============================================================================
 
-# Get latest Amazon Linux 2023 AMI (free tier eligible)
+resource "aws_iam_user" "demo_platform_engineer" {
+  name = "demo-platform-engineer"
+  path = "/okta-synced/"
+  
+  tags = {
+    OktaGroup       = "okta-platform-engineers"
+    OktaEmail       = "engineer@demo.com"
+    SAMLFederated   = "true"
+    Description     = "Demo user - would be auto-provisioned via Okta SCIM in production"
+  }
+}
+
+resource "aws_iam_user_group_membership" "demo_platform_engineer" {
+  user   = aws_iam_user.demo_platform_engineer.name
+  groups = [aws_iam_group.platform_engineers.name]
+}
+
+resource "aws_iam_user" "demo_developer" {
+  name = "demo-developer"
+  path = "/okta-synced/"
+  
+  tags = {
+    OktaGroup       = "okta-developers"
+    OktaEmail       = "developer@demo.com"
+    SAMLFederated   = "true"
+    Description     = "Demo user - would be auto-provisioned via Okta SCIM in production"
+  }
+}
+
+resource "aws_iam_user_group_membership" "demo_developer" {
+  user   = aws_iam_user.demo_developer.name
+  groups = [aws_iam_group.developers.name]
+}
+
+# =============================================================================
+# SECTION 3: SAML-Ready IAM Roles (For Full SSO)
+# =============================================================================
+
+# These roles are ready for SAML federation
+# Just need to update the trust policy with actual Okta SAML provider ARN
+
+data "aws_caller_identity" "current" {}
+
+resource "aws_iam_role" "okta_platform_engineers_sso" {
+  name        = "Okta-SSO-PlatformEngineers"
+  description = "SAML federated role for Platform Engineers"
+  
+  # Trust policy template - ready for SAML provider
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          # In production, replace with: Federated = aws_iam_saml_provider.okta.arn
+          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
+        }
+        Action = "sts:AssumeRole"
+        Condition = {
+          StringEquals = {
+            "aws:PrincipalTag/OktaGroup" = "okta-platform-engineers"
+          }
+        }
+      }
+    ]
+  })
+
+  max_session_duration = 43200
+
+  tags = {
+    OktaGroup     = "okta-platform-engineers"
+    SAMLReady     = "true"
+    AccessLevel   = "PowerUser"
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "okta_platform_engineers_policy" {
+  role       = aws_iam_role.okta_platform_engineers_sso.name
+  policy_arn = "arn:aws:iam::aws:policy/PowerUserAccess"
+}
+
+resource "aws_iam_role" "okta_developers_sso" {
+  name        = "Okta-SSO-Developers"
+  description = "SAML federated role for Developers"
+  
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
+        }
+        Action = "sts:AssumeRole"
+        Condition = {
+          StringEquals = {
+            "aws:PrincipalTag/OktaGroup" = "okta-developers"
+          }
+        }
+      }
+    ]
+  })
+
+  max_session_duration = 28800
+
+  tags = {
+    OktaGroup     = "okta-developers"
+    SAMLReady     = "true"
+    AccessLevel   = "Developer"
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "okta_developers_ec2" {
+  role       = aws_iam_role.okta_developers_sso.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2FullAccess"
+}
+
+# =============================================================================
+# SECTION 4: EC2 Demo Instance
+# =============================================================================
+
 data "aws_ami" "amazon_linux" {
   most_recent = true
   owners      = ["amazon"]
@@ -77,39 +214,29 @@ data "aws_ami" "amazon_linux" {
   }
 }
 
-# Get default VPC
 data "aws_vpc" "default" {
   default = true
 }
 
-# =============================================================================
-# Security Group
-# =============================================================================
-
 resource "aws_security_group" "demo" {
-  name        = "${var.instance_name}-sg"
-  description = "Security group for MCP demo instance"
+  name        = "mcp-demo-sg"
+  description = "Security group for MCP demo"
   vpc_id      = data.aws_vpc.default.id
 
-  # SSH access (for demo only - restrict in production!)
   ingress {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
-    description = "SSH access"
   }
 
-  # HTTP access
   ingress {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
-    description = "HTTP access"
   }
 
-  # All outbound traffic
   egress {
     from_port   = 0
     to_port     = 0
@@ -118,161 +245,67 @@ resource "aws_security_group" "demo" {
   }
 
   tags = {
-    Name = "${var.instance_name}-sg"
+    Name = "mcp-demo-sg"
   }
 }
 
-# =============================================================================
-# EC2 Instance - Free Tier (t2.micro)
-# =============================================================================
-
 resource "aws_instance" "demo" {
   ami                    = data.aws_ami.amazon_linux.id
-  instance_type          = "t2.micro"  # Free tier eligible!
+  instance_type          = "t2.micro"
   vpc_security_group_ids = [aws_security_group.demo.id]
 
-  # Simple web server for demo
   user_data = <<-EOF
               #!/bin/bash
               yum update -y
               yum install -y httpd
               systemctl start httpd
               systemctl enable httpd
-              cat > /var/www/html/index.html << 'HTMLEOF'
-              <!DOCTYPE html>
-              <html>
-              <head>
-                  <title>Infrastructure Automation Demo</title>
-                  <style>
-                      body {
-                          font-family: Arial, sans-serif;
-                          max-width: 800px;
-                          margin: 50px auto;
-                          padding: 20px;
-                          background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-                          color: white;
-                          min-height: 100vh;
-                      }
-                      h1 { color: #00d4ff; }
-                      .box {
-                          background: rgba(255,255,255,0.1);
-                          padding: 20px;
-                          border-radius: 10px;
-                          margin: 20px 0;
-                      }
-                      .success { color: #00ff88; }
-                      .warning { color: #ffcc00; }
-                  </style>
-              </head>
-              <body>
-                  <h1>🚀 Infrastructure Automation MCP</h1>
-                  
-                  <div class="box">
-                      <h2 class="success">✅ EC2 Instance Deployed Successfully!</h2>
-                      <p>This instance was created automatically by:</p>
-                      <ul>
-                          <li>Natural language request to Claude</li>
-                          <li>MCP generated Terraform configuration</li>
-                          <li>GitHub Actions CI/CD pipeline</li>
-                      </ul>
-                  </div>
-                  
-                  <div class="box">
-                      <h2>📋 Demo Details</h2>
-                      <p><strong>Instance Type:</strong> t2.micro (Free Tier)</p>
-                      <p><strong>Created By:</strong> Faycal Ben Sassi</p>
-                      <p><strong>Purpose:</strong> ActiveCampaign Interview Demo</p>
-                  </div>
-                  
-                  <div class="box">
-                      <h2 class="warning">⏰ Auto-Destroy Notice</h2>
-                      <p>This instance will be automatically destroyed in <strong>3 minutes</strong> to avoid AWS charges.</p>
-                  </div>
-                  
-                  <div class="box">
-                      <h2>🔗 Project Links</h2>
-                      <p><a href="https://github.com/metalfa/infra-automation-mcp" style="color: #00d4ff;">GitHub Repository</a></p>
-                  </div>
-                  
-                  <p style="text-align: center; margin-top: 40px;">
-                      <em>"The future of DevOps is conversational"</em>
-                  </p>
-              </body>
-              </html>
-              HTMLEOF
+              echo "<h1>MCP Demo - EC2 + IAM + Okta SSO Ready</h1><p>Auto-destroy in 3 min</p>" > /var/www/html/index.html
               EOF
 
   tags = {
-    Name        = var.instance_name
-    AutoDestroy = "true"
+    Name = "mcp-demo-instance"
   }
 }
 
 # =============================================================================
-# IAM Role (for demo)
+# SECTION 5: Outputs
 # =============================================================================
-
-resource "aws_iam_role" "demo" {
-  name = "${var.instance_name}-role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "ec2.amazonaws.com"
-        }
-      }
-    ]
-  })
-
-  tags = {
-    Name = "${var.instance_name}-role"
-  }
-}
-
-resource "aws_iam_role_policy_attachment" "demo" {
-  role       = aws_iam_role.demo.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-}
-
-resource "aws_iam_instance_profile" "demo" {
-  name = "${var.instance_name}-profile"
-  role = aws_iam_role.demo.name
-}
-
-# =============================================================================
-# Outputs
-# =============================================================================
-
-output "instance_id" {
-  description = "EC2 Instance ID"
-  value       = aws_instance.demo.id
-}
 
 output "instance_public_ip" {
-  description = "Public IP address"
-  value       = aws_instance.demo.public_ip
+  value = aws_instance.demo.public_ip
 }
 
-output "instance_public_dns" {
-  description = "Public DNS name"
-  value       = aws_instance.demo.public_dns
+output "iam_groups" {
+  value = {
+    platform_engineers = aws_iam_group.platform_engineers.name
+    developers         = aws_iam_group.developers.name
+    readonly           = aws_iam_group.readonly.name
+  }
 }
 
-output "security_group_id" {
-  description = "Security Group ID"
-  value       = aws_security_group.demo.id
+output "iam_users" {
+  value = {
+    platform_engineer = aws_iam_user.demo_platform_engineer.name
+    developer         = aws_iam_user.demo_developer.name
+  }
 }
 
-output "iam_role_arn" {
-  description = "IAM Role ARN"
-  value       = aws_iam_role.demo.arn
+output "sso_roles" {
+  value = {
+    platform_engineers = aws_iam_role.okta_platform_engineers_sso.arn
+    developers         = aws_iam_role.okta_developers_sso.arn
+  }
 }
 
-output "web_url" {
-  description = "URL to access the web server"
-  value       = "http://${aws_instance.demo.public_ip}"
+output "okta_mapping" {
+  value = <<-EOT
+    
+    Okta Group → AWS IAM Group → AWS IAM Role
+    ═══════════════════════════════════════════
+    okta-platform-engineers → platform-engineers → Okta-SSO-PlatformEngineers
+    okta-developers         → developers         → Okta-SSO-Developers
+    okta-readonly           → readonly-users     → (ReadOnly access)
+    
+  EOT
 }
